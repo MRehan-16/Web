@@ -37,20 +37,76 @@
       }
       h1 {
         font-size: 2.5rem;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
       }
-      p {
-        font-size: 1.5rem;
+      .meal-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        justify-content: center;
+        width: 80%;
+        max-width: 400px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+      }
+      .meal-btn {
+        padding: 15px;
+        font-size: 1.2rem;
+        background: white;
+        border: 2px solid #333;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: left;
+      }
+      .meal-btn:hover {
+        transform: scale(1.05);
+        background: #eee;
+      }
+      .meal-btn.selected {
+        background: #4caf50;
+        color: white;
+        border-color: #4caf50;
+      }
+      .footer {
+        position: absolute;
+        bottom: 20px;
+        font-size: 1rem;
         color: #666;
+      }
+      .quote {
+        font-size: 1.2rem;
+        color: #777;
+        margin-top: 20px;
+        font-style: italic;
+      }
+      .add-food-btn {
+        margin-top: 20px;
+        padding: 12px 20px;
+        font-size: 1rem;
+        background: red;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: 0.3s;
+      }
+      .add-food-btn:hover {
+        background: black;
       }
     </style>
   </head>
   <body>
     <div class="nav">
-      <button onclick="window.location.href='Home.html'">Home</button>
+      <button onclick="window.location.href='index.html'">Home</button>
     </div>
     <h1>Today's Lunch</h1>
-    <p id="meal"></p>
+    <div class="meal-container" id="meal-container"></div>
+    <button class="add-food-btn" onclick="addFood()">➕ Add Food</button>
+    <p class="quote">"Good food is the foundation of happiness." 🍽️</p>
+    <div class="footer">Enjoy your meal! 🍕🥗🍛</div>
 
     <script>
       const meals = {
@@ -83,7 +139,7 @@
         },
       };
 
-      function getMeal() {
+      function getMeals() {
         const today = new Date();
         const dayNames = [
           "Sunday",
@@ -95,14 +151,58 @@
           "Saturday",
         ];
         const day = dayNames[today.getDay()];
-        const weekNumber = Math.ceil(today.getDate() / 7);
-        const currentWeek = ((weekNumber - 1) % 3) + 1;
+        const mealContainer = document.getElementById("meal-container");
+        mealContainer.innerHTML = "";
 
-        document.getElementById("meal").innerText =
-          meals[currentWeek][day] || "No meal planned";
+        const selectedMeals =
+          JSON.parse(localStorage.getItem("selectedMeals")) || {};
+
+        const allMeals = new Set();
+        Object.values(meals).forEach((week) => {
+          if (week[day]) allMeals.add(week[day]);
+        });
+
+        allMeals.forEach((meal) => {
+          const button = document.createElement("button");
+          button.textContent = meal;
+          button.classList.add("meal-btn");
+          if (selectedMeals[meal]) {
+            button.classList.add("selected");
+          }
+          button.addEventListener("click", () => {
+            button.classList.toggle("selected");
+            selectedMeals[meal] = button.classList.contains("selected");
+            localStorage.setItem(
+              "selectedMeals",
+              JSON.stringify(selectedMeals)
+            );
+          });
+          mealContainer.appendChild(button);
+        });
       }
 
-      getMeal();
+      function addFood() {
+        const newFood = prompt("Enter new food item:");
+        if (newFood) {
+          const button = document.createElement("button");
+          button.textContent = newFood;
+          button.classList.add("meal-btn");
+          button.addEventListener("click", () => {
+            button.classList.toggle("selected");
+          });
+          document.getElementById("meal-container").appendChild(button);
+        }
+      }
+
+      getMeals();
+
+      window.resetMeals = function () {
+        localStorage.removeItem("selectedMeals");
+        document.querySelectorAll(".meal-btn").forEach((btn) => {
+          btn.classList.remove("selected");
+        });
+        console.log("Meal selection reset!");
+      };
     </script>
   </body>
 </html>
